@@ -8,46 +8,63 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    // app/Http/Controllers/AuthController.php
+
     public function register(Request $request)
     {
-        $request->validate([
+        \Log::info('Register endpoint hit');
+    
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'phone_number' => 'required|string|max:15|unique:customers',
-            'email' => 'required|string|email|max:255|unique:customers',
+            'phone_number' => 'required|string|unique:customers',
+            'email' => 'nullable|string|email|max:255|unique:customers',
         ]);
-
-        $user = Customer::create([
-            'name' => $request->name,
-            'phone_number' => $request->phone_number,
-            'email' => $request->email,
-            'is_logged_in' => false,
-            'points' => 0,
+    
+        $customer = Customer::create([
+            'name' => $validatedData['name'],
+            'phone_number' => $validatedData['phone_number'],
+            'email' => $validatedData['email'],
+            'points' => 0, // Default nilai 0
         ]);
+    
+        $token = $customer->createToken('authToken')->plainTextToken;
+    
+        return response()->json([
+            'name' => $customer->name,
+            'phone_number' => $customer->phone_number,
+            'email' => $customer->email,
+            'points' => $customer->points,
+            'token' => $token,
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json(['token' => $token], 201);
+        ], 201);
     }
-
+    
     public function login(Request $request)
-    {
-        $request->validate([
-            'phone_number' => 'required|string',
+{
+    // Validate the phone number input
+    $request->validate([
+        'phone_number' => 'required|string',
+    ]);
+
+    // Attempt to find the user by phone number
+    $user = Customer::where('phone_number', $request->phone_number)->first();
+
+    // If user is not found, throw a validation exception
+    if (!$user) {
+        throw ValidationException::withMessages([
+            'phone_number' => ['The provided credentials are incorrect.'],
         ]);
-
-        $user = Customer::where('phone_number', $request->phone_number)->first();
-
-        if (!$user) {
-            throw ValidationException::withMessages([
-                'phone_number' => ['The provided credentials are incorrect.'],
-            ]);
-        }
-
-        $user->update(['is_logged_in' => true]);
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json(['token' => $token], 200);
     }
+
+    // Update user's logged in status and create a token
+    $user->update(['is_logged_in' => true]);
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    // Return the token and customer_id in the response
+    return response()->json(['token' => $token, 'customer_id' => $user->id], 200);
+}
+
+    
 
     public function logout(Request $request)
     {

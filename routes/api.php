@@ -20,10 +20,16 @@ Route::get('/menu-items/type/{type}', [MenuItemController::class, 'getByType']);
 Route::get('/menu-items/label/{label}', [MenuItemController::class, 'getByLabel']);
 
 // Rute untuk operasi keranjang belanja
+ //Route::middleware('auth:sanctum')->group(function () {
+  //  Route::post('/cart/add', [OrderController::class, 'addToCart']);
+    //Route::post('/cart/remove', [OrderController::class, 'removeFromCart']);
+    //Route::get('/cart', [OrderController::class, 'getCart']);
+    //Route::post('/cart/add-one', [OrderController::class, 'addOneCartItem']);
+    //Route::post('/cart/minus-one', [OrderController::class, 'minusOneCartItem']);
+//});
+
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/cart/add', [OrderController::class, 'addToCart']);
-    Route::post('/cart/remove', [OrderController::class, 'removeFromCart']);
-    Route::get('/cart', [OrderController::class, 'getCart']);
-    Route::post('/cart/add-one', [OrderController::class, 'addOneCartItem']);
-    Route::post('/cart/minus-one', [OrderController::class, 'minusOneCartItem']);
+    Route::post('/orders', [OrderController::class, 'store']);
+    Route::get('/orders/history', [OrderController::class, 'history']); // Rute untuk riwayat pesanan
+
 });

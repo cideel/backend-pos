@@ -1,17 +1,15 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
 {
-    use HasFactory;
-
-    protected $fillable = ['order_id', 'item_id', 'quantity'];
-
-    public $timestamps = false; // Menonaktifkan timestamps
+    protected $fillable = [
+        'order_id',
+        'item_id',
+        'quantity',
+    ];
 
     public function order()
     {
@@ -20,6 +18,6 @@ class OrderItem extends Model
 
     public function menuItem()
     {
-        return $this->belongsTo(MenuItem::class, 'item_id', 'item_id');
+        return $this->belongsTo(MenuItem::class, 'item_id');
     }
 }
